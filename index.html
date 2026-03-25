@@ -1338,8 +1338,6 @@ function parseRoom(md, filename) {
   var title = '';
   var descLines = [];
   var interactions = [];
-  var exits = [];
-  var section = 'desc'; // desc | actions | exits | unknown
 
   for (var i = 0; i < lines.length; i++) {
     var trimmed = lines[i].trim();
@@ -1350,31 +1348,25 @@ function parseRoom(md, filename) {
       continue;
     }
 
-    // Section headers
-    if (/^##\s+可以做的事/.test(trimmed)) { section = 'actions'; continue; }
-    if (/^##\s+出口/.test(trimmed))       { section = 'exits';   continue; }
-    if (/^##\s+/.test(trimmed))            { section = 'unknown'; continue; }
-
+    // Skip blank lines and ## headings
     if (trimmed === '') continue;
+    if (/^##\s+/.test(trimmed)) continue;
 
-    if (section === 'desc') {
-      descLines.push(trimmed);
-    } else if (section === 'actions') {
-      var m = trimmed.match(/^(.+?)[：:]\s*(.+)$/);
-      if (m) {
-        var rawResult = m[2].trim();
-        var collectible = null;
-        var cm = rawResult.match(/\*(.+?)\*\s*$/);
-        if (cm) {
-          collectible = cm[1].trim();
-          rawResult = rawResult.replace(/\*(.+?)\*\s*$/, '').trim();
-        }
-        var interLabel = m[1].trim();
-        interactions.push({ label: interLabel, result: rawResult, collectible: collectible });
+    // Lines with : or fullwidth colon (text on both sides) → interaction
+    var m = trimmed.match(/^(.+?)[：:]\s*(.+)$/);
+    if (m) {
+      var rawResult = m[2].trim();
+      var collectible = null;
+      var cm = rawResult.match(/\*(.+?)\*\s*$/);
+      if (cm) {
+        collectible = cm[1].trim();
+        rawResult = rawResult.replace(/\*(.+?)\*\s*$/, '').trim();
       }
-    } else if (section === 'exits') {
-      var m2 = trimmed.match(/^(.+?)[：:]\s*(.+)$/);
-      if (m2) exits.push({ direction: m2[1].trim(), description: m2[2].trim() });
+      var interLabel = m[1].trim();
+      interactions.push({ label: interLabel, result: rawResult, collectible: collectible });
+    } else {
+      // Everything else → description
+      descLines.push(trimmed);
     }
   }
 
@@ -1384,8 +1376,7 @@ function parseRoom(md, filename) {
     filename: filename,
     title: title,
     description: descLines.join('\n\n'),
-    interactions: interactions,
-    exits: exits
+    interactions: interactions
   };
 }
 
@@ -2548,8 +2539,6 @@ function renderRoom() {
 
   // Interactions section
   if (room.interactions.length > 0) {
-    container.appendChild(el('div', 'section-heading', '-- 可以做的事 --'));
-
     var roomChoices = G.choices[G.cur] || [];
     var hasAnyChoice = roomChoices.length > 0; // room already has a choice made
 
