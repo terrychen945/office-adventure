@@ -365,18 +365,6 @@ html, body {
   gap: 8px;
 }
 
-.interaction-dot {
-  flex-shrink: 0;
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  margin-top: 6px;
-}
-
-.interaction-dot.trait-action    { background: #e07850; }
-.interaction-dot.trait-observer  { background: #4a90d9; }
-.interaction-dot.trait-adventurer { background: #9b6bc4; }
-.interaction-dot.trait-warmheart { background: #4caf80; }
-
 .interaction-text {
   font-family: var(--font-sans);
   font-size: var(--fs-md);
@@ -557,19 +545,6 @@ html, body {
   font-style: italic;
 }
 
-.story-personality {
-  font-family: var(--font-serif);
-  font-size: var(--fs-md);
-  line-height: 2;
-  color: var(--accent);
-  margin-top: 24px;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--bg-card);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
 .story-copy-btn {
   font-family: var(--font-sans);
   font-size: var(--fs-md);
@@ -669,72 +644,6 @@ html, body {
   padding-left: 8px;
   border-left: 2px solid var(--border);
   margin-top: 4px;
-}
-
-/* Explorer profile tab */
-.profile-section {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.profile-canvas-wrap {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.profile-type-name {
-  font-family: var(--font-serif);
-  font-size: var(--fs-xl);
-  font-weight: 700;
-  color: var(--accent);
-  margin-bottom: 8px;
-}
-
-.profile-type-desc {
-  font-family: var(--font-serif);
-  font-size: var(--fs-md);
-  color: var(--text);
-  line-height: 1.8;
-  max-width: 320px;
-  margin: 0 auto;
-}
-
-.profile-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.profile-stat {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-  text-align: center;
-}
-
-.profile-stat-value {
-  font-family: var(--font-sans);
-  font-size: var(--fs-xl);
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.profile-stat-label {
-  font-family: var(--font-sans);
-  font-size: var(--fs-sm);
-  color: var(--text-dim);
-  margin-top: 2px;
-}
-
-.profile-empty {
-  font-family: var(--font-serif);
-  font-size: var(--fs-md);
-  color: var(--text-muted);
-  text-align: center;
-  padding: 40px 0;
 }
 
 /* ============================================================
@@ -1358,7 +1267,6 @@ html, body {
     <div id="journal-header">
       <button class="journal-tab active" id="tab-story" data-tab="story">我的故事</button>
       <button class="journal-tab" id="tab-log" data-tab="log">冒險日誌</button>
-      <button class="journal-tab" id="tab-profile" data-tab="profile">探險者側寫</button>
       <button class="journal-tab" id="tab-collectibles" data-tab="collectibles">收藏品</button>
       <button id="journal-close">關閉</button>
     </div>
@@ -1496,44 +1404,6 @@ var DIR_INFO = {
 var CANONICAL = { '往上': '往北', '往下': '往南' };
 function canon(d) { return CANONICAL[d] || d; }
 
-/* ----------------------------------------------------------------
-   TRAIT HELPERS
-   ---------------------------------------------------------------- */
-var TRAIT_KEYS = ['action', 'observer', 'adventurer', 'warmheart'];
-var TRAIT_LABELS = ['行動派', '觀察者', '冒險家', '暖心人'];
-var TRAIT_COLORS = ['#e67e22', '#3498db', '#9b59b6', '#27ae60'];
-var TRAIT_CLASSES = ['trait-action', 'trait-observer', 'trait-adventurer', 'trait-warmheart'];
-
-function traitIdxForInteraction(idx) {
-  // Position-based mapping: 0=action, 1=observer, 2=adventurer, 3+=warmheart
-  if (idx <= 2) return idx;
-  return 3;
-}
-
-var TRAIT_DESCRIPTIONS = {
-  action:     '你總是選擇最直接的路。哪裡有門就推，有按鈕就按。辦公室裡沒有你不敢碰的東西。',
-  observer:   '你喜歡先看清楚再動。每個便利貼、每行留言板上的字，都逃不過你的眼睛。',
-  adventurer: '你跟著感覺走，總能發現別人錯過的東西。辦公室對你來說是一座遊樂園。',
-  warmheart:  '你在意的不是探險本身，而是這些空間裡留下的人的痕跡。'
-};
-
-var BALANCED_DESC = '你的每一步都經過考量，不偏不倚。你是辦公室裡最可靠的探險者。';
-
-function getDominantTrait() {
-  var max = 0;
-  var maxKey = 'action';
-  var tied = false;
-  for (var i = 0; i < TRAIT_KEYS.length; i++) {
-    var v = G.traits[TRAIT_KEYS[i]];
-    if (v > max) { max = v; maxKey = TRAIT_KEYS[i]; tied = false; }
-    else if (v === max && max > 0) { tied = true; }
-  }
-  if (max === 0) return { key: null, label: '', desc: '' };
-  if (tied) return { key: 'balanced', label: '平衡者', desc: BALANCED_DESC };
-  var idx = TRAIT_KEYS.indexOf(maxKey);
-  return { key: maxKey, label: TRAIT_LABELS[idx], desc: TRAIT_DESCRIPTIONS[maxKey] };
-}
-
 /* Direction transition phrases */
 var DIR_PHRASES = {
   '往北': '你往走廊深處走去。',
@@ -1554,10 +1424,9 @@ var G = {
   prev: null,
   visited: {},         // filename -> true
   choices: {},         // filename -> [interactionIndex, ...]
-  choiceResults: {},   // filename -> [{action, result, traitIdx}]
+  choiceResults: {},   // filename -> [{action, result}]
   positions: {},       // filename -> {x, y}
-  log: [],             // [{type, room, action, result, direction, time, traitIdx}]
-  traits: { action: 0, observer: 0, adventurer: 0, warmheart: 0 },
+  log: [],             // [{type, room, action, result, direction, time}]
   hiddenChars: {},     // filename -> { interactionIdx, char }
   collectedChars: { '\u5747': false, '\u4E00': false, '\u633A': false, '\u958B': false, '\u6E90': false },
   collectibles: [],    // [{name, room, roomTitle}]
@@ -1571,7 +1440,7 @@ function save() {
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       cur: G.cur, visited: G.visited, choices: G.choices,
       choiceResults: G.choiceResults, positions: G.positions,
-      log: G.log, traits: G.traits,
+      log: G.log,
       collectedChars: G.collectedChars, collectibles: G.collectibles,
       playerName: G.playerName
     }));
@@ -1719,6 +1588,31 @@ function clearEl(container) {
 }
 
 function $(id) { return document.getElementById(id); }
+
+function copyText(text, btn, original) {
+  function done() {
+    btn.textContent = '\u5DF2\u8907\u88FD';
+    setTimeout(function () { btn.textContent = original; }, 2000);
+  }
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(fallback);
+    } else {
+      fallback();
+    }
+  } catch (e) { fallback(); }
+  function fallback() {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  }
+}
 
 /* ----------------------------------------------------------------
    DUST PARTICLES (welcome screen -- warm lamplight dust)
@@ -2124,12 +2018,7 @@ function handleMapClick(e, container, tooltip) {
   }
 }
 
-/* ----------------------------------------------------------------
-   POSITION CALCULATOR
-   ---------------------------------------------------------------- */
-function assignPosition(filename) {
-  // No-op: positions are pre-computed by the grid in buildConnections()
-}
+/* Positions are pre-computed by the grid in buildConnections() */
 
 /* ----------------------------------------------------------------
    UI UPDATE HELPERS
@@ -2438,12 +2327,10 @@ function generatePlaque(canvas, name) {
   // -- Stats --
   var visitCount = Object.keys(G.visited).length;
   var choiceCount = G.log.filter(function (e) { return e.type === 'choice'; }).length;
-  var dominant = getDominantTrait();
-  var traitLabel = dominant.label || '\u63A2\u7D22\u8005';
   ctx.fillStyle = '#a09585';
   ctx.font = '12px "Noto Sans TC", sans-serif';
   var colCount = G.collectibles.length;
-  var statsLine = '\u63A2\u7D22 ' + visitCount + ' \u500B\u5834\u666F  |  ' + choiceCount + ' \u6B21\u9078\u64C7  |  ' + colCount + ' \u4EF6\u6536\u85CF\u54C1  |  ' + traitLabel;
+  var statsLine = '\u63A2\u7D22 ' + visitCount + ' \u500B\u5834\u666F  |  ' + choiceCount + ' \u6B21\u9078\u64C7  |  ' + colCount + ' \u4EF6\u6536\u85CF\u54C1';
   ctx.fillText(statsLine, w / 2, 346);
 
   // -- Date --
@@ -2483,14 +2370,12 @@ function roundRect(ctx, x, y, w, h, r) {
 
 function generateVerifyCode(name) {
   var visitCount = Object.keys(G.visited).length;
-  var dominant = getDominantTrait();
   var now = new Date();
   var dateStr = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2);
   var payload = JSON.stringify({
     n: name,
     d: dateStr,
-    r: visitCount,
-    t: dominant.label || ''
+    r: visitCount
   });
   try { return btoa(unescape(encodeURIComponent(payload))); }
   catch (e) { return btoa(payload); }
@@ -2523,12 +2408,7 @@ function buildCompletionActions(container, canvas, name) {
   copyBtn.addEventListener('click', function () {
     var code = generateVerifyCode(name);
     var shareUrl = location.origin + location.pathname + '?verify=' + encodeURIComponent(code);
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(shareUrl).then(function () {
-        copyBtn.textContent = '\u5DF2\u8907\u88FD';
-        setTimeout(function () { copyBtn.textContent = '\u8907\u88FD\u5206\u4EAB\u78BC'; }, 2000);
-      });
-    }
+    copyText(shareUrl, copyBtn, '\u8907\u88FD\u5206\u4EAB\u78BC');
   });
   container.appendChild(copyBtn);
 
@@ -2631,8 +2511,6 @@ function renderRoom() {
         var inter = room.interactions[interactionIdx];
         var wasChosen = roomChoices.indexOf(interactionIdx) >= 0;
         var isLocked = !wasChosen && hasAnyChoice; // locked: not chosen but room already has a choice
-        var tIdx = traitIdxForInteraction(interactionIdx);
-
         var card = el('div', 'interaction-card');
 
         if (wasChosen) {
@@ -2644,10 +2522,6 @@ function renderRoom() {
 
         // Label row
         var labelRow = el('div', 'interaction-label');
-
-        // Trait dot
-        var dot = el('span', 'interaction-dot ' + TRAIT_CLASSES[tIdx]);
-        labelRow.appendChild(dot);
 
         // Action text
         var txt = el('span', 'interaction-text', inter.label);
@@ -2681,12 +2555,8 @@ function renderRoom() {
             if (!G.choiceResults[G.cur]) G.choiceResults[G.cur] = [];
             G.choiceResults[G.cur].push({
               action: inter.label,
-              result: inter.result,
-              traitIdx: tIdx
+              result: inter.result
             });
-
-            // Update trait
-            G.traits[TRAIT_KEYS[tIdx]]++;
 
             // Log the choice
             G.log.push({
@@ -2694,7 +2564,6 @@ function renderRoom() {
               room: G.cur,
               action: inter.label,
               result: inter.result,
-              traitIdx: tIdx,
               time: Date.now()
             });
 
@@ -2785,9 +2654,6 @@ function navigateTo(filename, direction) {
     G.prev = G.cur;
     G.cur = filename;
 
-    // Assign position
-    assignPosition(filename, G.prev, direction);
-
     // Mark visited
     var firstVisit = !G.visited[filename];
     G.visited[filename] = true;
@@ -2818,7 +2684,6 @@ function navigateTo(filename, direction) {
 
 function enterRoom(filename) {
   G.cur = filename;
-  assignPosition(filename, null, null);
   G.visited[filename] = true;
 
   G.log.push({
@@ -2903,13 +2768,6 @@ function renderStoryTab() {
     }
   }
 
-  // Personality summary
-  var dominant = getDominantTrait();
-  if (dominant.key) {
-    var personality = el('div', 'story-personality', dominant.desc);
-    container.appendChild(personality);
-  }
-
   // Copy button
   var copyBtn = el('button', 'story-copy-btn', '複製故事');
   copyBtn.addEventListener('click', function () {
@@ -2931,14 +2789,7 @@ function renderStoryTab() {
         text += phrase + '\n\n';
       }
     }
-    if (dominant.key) text += dominant.desc + '\n';
-
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(function () {
-        copyBtn.textContent = '已複製';
-        setTimeout(function () { copyBtn.textContent = '複製故事'; }, 2000);
-      });
-    }
+    copyText(text, copyBtn, '\u8907\u88FD\u6545\u4E8B');
   });
   container.appendChild(copyBtn);
 
@@ -2947,7 +2798,6 @@ function renderStoryTab() {
   var visitCount = Object.keys(G.visited).length;
   var choiceCount = G.log.filter(function (e) { return e.type === 'choice'; }).length;
   var statsText = '探索了 ' + visitCount + ' 個場景，做了 ' + choiceCount + ' 個選擇，收集了 ' + G.collectibles.length + ' 件收藏品';
-  if (dominant.key) statsText += '，你是' + dominant.label;
   var strong = el('strong', null, statsText);
   statsDiv.appendChild(strong);
   container.appendChild(statsDiv);
@@ -3035,143 +2885,6 @@ function renderLogTab() {
 }
 
 /* ----------------------------------------------------------------
-   JOURNAL: PROFILE TAB (Explorer Personality)
-   ---------------------------------------------------------------- */
-function renderProfileTab() {
-  var container = $('journal-content');
-  clearEl(container);
-
-  var totalChoices = G.log.filter(function (e) { return e.type === 'choice'; }).length;
-
-  if (totalChoices < 2) {
-    container.appendChild(el('div', 'profile-empty', '再多探索一些場景...'));
-    return;
-  }
-
-  var section = el('div', 'profile-section');
-
-  // Radar chart
-  var canvasWrap = el('div', 'profile-canvas-wrap');
-  var canvas = el('canvas');
-  var sz = 240;
-  canvas.width = sz * 2; canvas.height = sz * 2;
-  canvas.style.width = sz + 'px'; canvas.style.height = sz + 'px';
-  canvasWrap.appendChild(canvas);
-  section.appendChild(canvasWrap);
-
-  drawRadarChart(canvas, sz);
-
-  // Personality type
-  var dominant = getDominantTrait();
-  section.appendChild(el('div', 'profile-type-name', dominant.label));
-  section.appendChild(el('div', 'profile-type-desc', dominant.desc));
-
-  // Stats
-  var stats = el('div', 'profile-stats');
-  for (var i = 0; i < TRAIT_KEYS.length; i++) {
-    var stat = el('div', 'profile-stat');
-    var val = el('div', 'profile-stat-value', '' + G.traits[TRAIT_KEYS[i]]);
-    val.style.color = TRAIT_COLORS[i];
-    stat.appendChild(val);
-    stat.appendChild(el('div', 'profile-stat-label', TRAIT_LABELS[i]));
-    stats.appendChild(stat);
-  }
-  section.appendChild(stats);
-
-  container.appendChild(section);
-}
-
-function drawRadarChart(canvas, sz) {
-  var ctx = canvas.getContext('2d');
-  var dpr = 2; // canvas is already 2x
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, sz, sz);
-
-  var cx = sz / 2, cy = sz / 2;
-  var maxR = sz * 0.35;
-  var axes = 4;
-  var angleOffset = -Math.PI / 2; // start from top
-
-  // Find max trait value for normalization
-  var maxVal = 1;
-  for (var i = 0; i < TRAIT_KEYS.length; i++) {
-    if (G.traits[TRAIT_KEYS[i]] > maxVal) maxVal = G.traits[TRAIT_KEYS[i]];
-  }
-
-  // Draw grid circles
-  for (var ring = 1; ring <= 3; ring++) {
-    var r = maxR * ring / 3;
-    ctx.beginPath();
-    for (var a = 0; a < axes; a++) {
-      var angle = angleOffset + (Math.PI * 2 / axes) * a;
-      var x = cx + Math.cos(angle) * r;
-      var y = cy + Math.sin(angle) * r;
-      if (a === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    ctx.strokeStyle = 'rgba(51,48,43,0.6)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-
-  // Draw axes
-  for (var a = 0; a < axes; a++) {
-    var angle = angleOffset + (Math.PI * 2 / axes) * a;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + Math.cos(angle) * maxR, cy + Math.sin(angle) * maxR);
-    ctx.strokeStyle = 'rgba(51,48,43,0.4)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-
-  // Draw data polygon
-  ctx.beginPath();
-  for (var a = 0; a < axes; a++) {
-    var angle = angleOffset + (Math.PI * 2 / axes) * a;
-    var val = G.traits[TRAIT_KEYS[a]] / maxVal;
-    var r2 = maxR * Math.max(val, 0.08); // minimum visible
-    var x = cx + Math.cos(angle) * r2;
-    var y = cy + Math.sin(angle) * r2;
-    if (a === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  ctx.closePath();
-  ctx.fillStyle = 'rgba(224,180,130,0.2)';
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(224,180,130,0.8)';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Draw data points
-  for (var a = 0; a < axes; a++) {
-    var angle = angleOffset + (Math.PI * 2 / axes) * a;
-    var val = G.traits[TRAIT_KEYS[a]] / maxVal;
-    var r3 = maxR * Math.max(val, 0.08);
-    var x = cx + Math.cos(angle) * r3;
-    var y = cy + Math.sin(angle) * r3;
-    ctx.beginPath();
-    ctx.arc(x, y, 4, 0, Math.PI * 2);
-    ctx.fillStyle = TRAIT_COLORS[a];
-    ctx.fill();
-  }
-
-  // Draw labels
-  ctx.font = '13px "Noto Sans TC"';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  for (var a = 0; a < axes; a++) {
-    var angle = angleOffset + (Math.PI * 2 / axes) * a;
-    var labelR = maxR + 22;
-    var x = cx + Math.cos(angle) * labelR;
-    var y = cy + Math.sin(angle) * labelR;
-    ctx.fillStyle = TRAIT_COLORS[a];
-    ctx.fillText(TRAIT_LABELS[a], x, y);
-  }
-}
-
-/* ----------------------------------------------------------------
    JOURNAL: COLLECTIBLES TAB
    ---------------------------------------------------------------- */
 function renderCollectiblesTab() {
@@ -3211,7 +2924,6 @@ function switchTab(tab) {
 
   if (tab === 'story') renderStoryTab();
   else if (tab === 'log') renderLogTab();
-  else if (tab === 'profile') renderProfileTab();
   else if (tab === 'collectibles') renderCollectiblesTab();
 }
 
@@ -3262,7 +2974,6 @@ function bindEvents() {
   // Journal tabs
   $('tab-story').addEventListener('click', function () { switchTab('story'); });
   $('tab-log').addEventListener('click', function () { switchTab('log'); });
-  $('tab-profile').addEventListener('click', function () { switchTab('profile'); });
   $('tab-collectibles').addEventListener('click', function () { switchTab('collectibles'); });
 
   // Journal close
@@ -3383,7 +3094,6 @@ function init() {
             if (!savedLog[li].room || G.roomMap[savedLog[li].room]) G.log.push(savedLog[li]);
           }
 
-          G.traits = saved.traits || { action: 0, observer: 0, adventurer: 0, warmheart: 0 };
           if (saved.collectedChars) G.collectedChars = saved.collectedChars;
           if (saved.collectibles) G.collectibles = saved.collectibles;
           if (saved.playerName) G.playerName = saved.playerName;
